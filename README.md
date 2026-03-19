@@ -1,6 +1,8 @@
 # gpsgame
 GPS game
 
+[text](https://ksizorcode.github.io/gpsgame/)
+
 
 raid-pwa/
 ├── index.html
