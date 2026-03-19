@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Treasure Hunt</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 20px; }
+        #compass {
+            width: 150px; height: 150px; border-radius: 50%;
+            border: 5px solid #333; margin: 20px auto;
+            position: relative; transition: transform 0.2s ease-out;
+        }
+        #arrow {
+            width: 0; height: 0; 
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-bottom: 50px solid #e74c3c;
+            position: absolute; top: 20px; left: 60px;
+        }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        button { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 8px; margin: 5px; font-size: 16px; cursor: pointer; }
+        button:disabled { background: #ccc; }
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <h2>Destino Actual</h2>
+        <p id="hint">Pulsa "Iniciar GPS" para comenzar</p>
+        
+        <div id="compass">
+            <div id="arrow"></div>
+        </div>
+        
+        <p id="distance">Distancia: -- m</p>
+        
+        <button id="btnGPS">1. Iniciar GPS</button>
+        <button id="btnCompass" disabled>2. Activar Brújula</button>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
