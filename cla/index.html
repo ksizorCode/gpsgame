@@ -1,44 +1,1105 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GPS Treasure Hunt</title>
-    <style>
-        body { font-family: sans-serif; text-align: center; background: #f0f2f5; padding: 20px; }
-        #compass {
-            width: 150px; height: 150px; border-radius: 50%;
-            border: 5px solid #333; margin: 20px auto;
-            position: relative; transition: transform 0.2s ease-out;
-        }
-        #arrow {
-            width: 0; height: 0; 
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-bottom: 50px solid #e74c3c;
-            position: absolute; top: 20px; left: 60px;
-        }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        button { background: #007bff; color: white; border: none; padding: 12px 20px; border-radius: 8px; margin: 5px; font-size: 16px; cursor: pointer; }
-        button:disabled { background: #ccc; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0a0f1e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>GPS Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #04080f;
+    --surface: #0d1525;
+    --border: #1a2d4a;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #39ff14;
+    --text: #c8ddf0;
+    --text-dim: #4a6a8a;
+    --glow: 0 0 20px rgba(0,212,255,0.4);
+    --glow-red: 0 0 20px rgba(255,107,53,0.4);
+    --glow-green: 0 0 20px rgba(57,255,20,0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  /* Scanline effect */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,212,255,0.015) 2px,
+      rgba(0,212,255,0.015) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* Grid background */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.05) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  #app {
+    position: relative;
+    z-index: 1;
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 20px 16px;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 20px 0 10px;
+  }
+
+  .header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--accent);
+    text-shadow: var(--glow);
+    letter-spacing: 0.3em;
+    animation: flicker 6s infinite;
+  }
+
+  .header .subtitle {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    margin-top: 4px;
+  }
+
+  @keyframes flicker {
+    0%,95%,100% { opacity: 1; }
+    96% { opacity: 0.8; }
+    97% { opacity: 1; }
+    98% { opacity: 0.6; }
+    99% { opacity: 1; }
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  }
+
+  .card-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.3em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Buttons */
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border: 1px solid;
+    border-radius: 3px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+    background: transparent;
+  }
+
+  .btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .btn:active::before { opacity: 1; }
+
+  .btn-gps {
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+  .btn-gps::before { background: rgba(0,212,255,0.1); }
+  .btn-gps:hover { box-shadow: var(--glow); }
+  .btn-gps.active {
+    background: rgba(0,212,255,0.1);
+    box-shadow: var(--glow);
+    color: var(--accent);
+  }
+
+  .btn-compass {
+    color: var(--accent2);
+    border-color: var(--accent2);
+  }
+  .btn-compass::before { background: rgba(255,107,53,0.1); }
+  .btn-compass:hover { box-shadow: var(--glow-red); }
+  .btn-compass.active {
+    background: rgba(255,107,53,0.1);
+    box-shadow: var(--glow-red);
+  }
+
+  .btn-row { display: flex; gap: 10px; }
+  .btn-row .btn { flex: 1; }
+
+  /* Status indicators */
+  .status-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .status-item {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 10px;
+  }
+
+  .status-label {
+    font-size: 0.6rem;
+    color: var(--text-dim);
+    letter-spacing: 0.2em;
+    margin-bottom: 4px;
+  }
+
+  .status-value {
+    font-size: 1rem;
+    color: var(--accent);
+    text-shadow: var(--glow);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .status-value.orange { color: var(--accent2); text-shadow: var(--glow-red); }
+  .status-value.green { color: var(--accent3); text-shadow: var(--glow-green); }
+
+  /* Big dot indicator */
+  .indicator-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+    margin-right: 6px;
+    transition: all 0.3s;
+  }
+  .indicator-dot.on-gps { background: var(--accent); box-shadow: var(--glow); animation: pulse 1.5s infinite; }
+  .indicator-dot.on-compass { background: var(--accent2); box-shadow: var(--glow-red); animation: pulse 1.5s infinite; }
+  .indicator-dot.on-green { background: var(--accent3); box-shadow: var(--glow-green); animation: pulse 1.5s infinite; }
+
+  @keyframes pulse {
+    0%,100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.7; }
+  }
+
+  /* COMPASS */
+  .compass-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 10px 0;
+  }
+
+  .compass-outer {
+    position: relative;
+    width: 240px;
+    height: 240px;
+  }
+
+  .compass-ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    background: radial-gradient(circle at center, #0a1520, #04080f);
+  }
+
+  .compass-ring::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border-radius: 50%;
+    border: 1px solid rgba(0,212,255,0.15);
+  }
+
+  .compass-ticks {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+  }
+
+  .cardinal {
+    position: absolute;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text-dim);
+    transform: translate(-50%, -50%);
+  }
+
+  .cardinal.N { top: 14px; left: 50%; color: var(--accent2); text-shadow: var(--glow-red); }
+  .cardinal.S { bottom: 6px; left: 50%; top: auto; transform: translate(-50%, 50%); }
+  .cardinal.E { right: 8px; top: 50%; transform: translate(50%, -50%); }
+  .cardinal.W { left: 8px; top: 50%; transform: translate(-50%, -50%); }
+
+  /* Needle group rotates based on heading to TARGET */
+  .needle-group {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+    transform-origin: center center;
+  }
+
+  /* North indicator (device heading ring) */
+  .north-ring {
+    position: absolute;
+    inset: 20px;
+    border-radius: 50%;
+    border: 1px dashed rgba(255,107,53,0.2);
+    transition: transform 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+    transform-origin: center center;
+  }
+
+  .north-pip {
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: var(--glow-red);
+  }
+
+  .needle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform-origin: 50% 100%;
+    transform: translate(-50%, -100%);
+  }
+
+  /* Arrow to target */
+  .needle-target {
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-bottom: 90px solid var(--accent3);
+    filter: drop-shadow(0 0 8px var(--accent3));
+  }
+
+  .needle-target-tail {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, 0);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 50px solid rgba(57,255,20,0.3);
+  }
+
+  /* Center dot */
+  .compass-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: var(--glow);
+    z-index: 10;
+  }
+
+  /* Distance display */
+  .distance-display {
+    text-align: center;
+  }
+
+  .distance-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    font-weight: 900;
+    color: var(--accent3);
+    text-shadow: var(--glow-green);
+    line-height: 1;
+  }
+
+  .distance-unit {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    letter-spacing: 0.3em;
+    margin-top: 4px;
+  }
+
+  .bearing-display {
+    font-size: 1.2rem;
+    color: var(--accent);
+    text-shadow: var(--glow);
+    letter-spacing: 0.1em;
+  }
+
+  /* Location list */
+  .location-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .location-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .location-item:hover {
+    border-color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+
+  .location-item.active {
+    border-color: var(--accent3);
+    background: rgba(57,255,20,0.05);
+    box-shadow: var(--glow-green);
+  }
+
+  .location-item.completed {
+    border-color: rgba(57,255,20,0.3);
+    opacity: 0.6;
+  }
+
+  .loc-number {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--text-dim);
+    width: 28px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .location-item.active .loc-number { color: var(--accent3); text-shadow: var(--glow-green); }
+  .location-item.completed .loc-number { color: var(--accent3); }
+
+  .loc-info { flex: 1; min-width: 0; }
+
+  .loc-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 3px;
+    letter-spacing: 0.1em;
+  }
+
+  .loc-hint {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .loc-status {
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  /* Clue box */
+  .clue-box {
+    background: rgba(0,212,255,0.05);
+    border: 1px solid rgba(0,212,255,0.2);
+    border-radius: 3px;
+    padding: 14px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    color: var(--text);
+    position: relative;
+  }
+
+  .clue-box::before {
+    content: '// PISTA';
+    display: block;
+    font-size: 0.6rem;
+    color: var(--accent);
+    letter-spacing: 0.3em;
+    margin-bottom: 8px;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  /* Modal/overlay */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    animation: fadeIn 0.3s;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--accent3);
+    border-radius: 4px;
+    padding: 32px 24px;
+    text-align: center;
+    max-width: 360px;
+    width: 100%;
+    box-shadow: 0 0 60px rgba(57,255,20,0.3);
+    animation: zoomIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  @keyframes zoomIn { from { transform: scale(0.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+  .modal-icon { font-size: 4rem; margin-bottom: 16px; }
+
+  .modal-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: var(--accent3);
+    text-shadow: var(--glow-green);
+    letter-spacing: 0.2em;
+    margin-bottom: 12px;
+  }
+
+  .modal-message {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 24px;
+  }
+
+  .btn-modal {
+    background: var(--accent3);
+    color: #000;
+    border: none;
+    padding: 12px 32px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-modal:hover { box-shadow: var(--glow-green); }
+
+  /* Log */
+  .log-box {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    line-height: 1.8;
+    max-height: 60px;
+    overflow: hidden;
+  }
+
+  .log-line { display: flex; gap: 8px; }
+  .log-time { color: var(--accent); flex-shrink: 0; }
+
+  /* Accuracy bar */
+  .accuracy-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+
+  .accuracy-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent3), var(--accent));
+    border-radius: 2px;
+    transition: width 0.5s;
+  }
+
+  /* Completed celebration line */
+  .complete-banner {
+    text-align: center;
+    padding: 8px;
+    background: rgba(57,255,20,0.1);
+    border: 1px solid rgba(57,255,20,0.3);
+    border-radius: 3px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.7rem;
+    color: var(--accent3);
+    text-shadow: var(--glow-green);
+    letter-spacing: 0.2em;
+    animation: pulse 2s infinite;
+  }
+
+  .hidden { display: none !important; }
+</style>
 </head>
 <body>
+<div id="app">
 
-    <div class="card">
-        <h2>Destino Actual</h2>
-        <p id="hint">Pulsa "Iniciar GPS" para comenzar</p>
-        
-        <div id="compass">
-            <div id="arrow"></div>
-        </div>
-        
-        <p id="distance">Distancia: -- m</p>
-        
-        <button id="btnGPS">1. Iniciar GPS</button>
-        <button id="btnCompass" disabled>2. Activar Brújula</button>
+  <!-- Header -->
+  <div class="header">
+    <h1>GPS QUEST</h1>
+    <div class="subtitle">▸ SISTEMA DE NAVEGACIÓN TÁCTICA ◂</div>
+  </div>
+
+  <!-- Controls -->
+  <div class="card">
+    <div class="card-title">SISTEMAS</div>
+    <div style="display:flex;flex-direction:column;gap:10px;">
+      <button class="btn btn-gps" id="btnGps" onclick="toggleGPS()">
+        <span class="indicator-dot" id="dotGps"></span>
+        <span id="btnGpsText">◉ ACTIVAR GPS</span>
+      </button>
+      <button class="btn btn-compass" id="btnCompass" onclick="toggleCompass()">
+        <span class="indicator-dot" id="dotCompass"></span>
+        <span id="btnCompassText">⊕ ACTIVAR BRÚJULA</span>
+      </button>
     </div>
+  </div>
 
-    <script src="app.js"></script>
+  <!-- GPS Status -->
+  <div class="card">
+    <div class="card-title">TELEMETRÍA</div>
+    <div class="status-grid">
+      <div class="status-item">
+        <div class="status-label">LATITUD</div>
+        <div class="status-value" id="valLat">---</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">LONGITUD</div>
+        <div class="status-value" id="valLon">---</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">PRECISIÓN</div>
+        <div class="status-value orange" id="valAcc">---</div>
+      </div>
+      <div class="status-item">
+        <div class="status-label">ORIENTACIÓN</div>
+        <div class="status-value orange" id="valHeading">---</div>
+      </div>
+    </div>
+    <div class="accuracy-bar"><div class="accuracy-fill" id="accBar" style="width:0%"></div></div>
+  </div>
+
+  <!-- Compass -->
+  <div class="card">
+    <div class="card-title">BRÚJULA DE NAVEGACIÓN</div>
+    <div class="compass-wrapper">
+
+      <div class="compass-outer">
+        <div class="compass-ring"></div>
+
+        <!-- Cardinals -->
+        <span class="cardinal N">N</span>
+        <span class="cardinal S">S</span>
+        <span class="cardinal E">E</span>
+        <span class="cardinal W">W</span>
+
+        <!-- North pip (rotates opposite to device heading) -->
+        <div class="north-ring" id="northRing">
+          <div class="north-pip"></div>
+        </div>
+
+        <!-- Target needle -->
+        <div class="needle-group" id="needleGroup">
+          <div class="needle" style="width:16px;height:90px;">
+            <div class="needle-target"></div>
+          </div>
+          <div class="needle-target-tail" style="top:50%;left:50%;transform:translate(-50%,0);"></div>
+        </div>
+
+        <div class="compass-center"></div>
+      </div>
+
+      <div class="distance-display">
+        <div class="distance-number" id="distNumber">---</div>
+        <div class="distance-unit">METROS AL OBJETIVO</div>
+        <div class="bearing-display" id="bearingDisplay">▸ --- °</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Current clue -->
+  <div class="card" id="clueCard">
+    <div class="card-title">MISIÓN ACTIVA</div>
+    <div class="clue-box" id="clueText">Activa el GPS para comenzar la misión...</div>
+  </div>
+
+  <!-- Locations -->
+  <div class="card">
+    <div class="card-title">OBJETIVOS</div>
+    <div class="location-list" id="locationList"></div>
+  </div>
+
+  <!-- Log -->
+  <div class="card">
+    <div class="card-title">REGISTRO</div>
+    <div class="log-box" id="logBox"></div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-icon" id="modalIcon">🎯</div>
+    <div class="modal-title" id="modalTitle">OBJETIVO ALCANZADO</div>
+    <div class="modal-message" id="modalMessage"></div>
+    <button class="btn-modal" onclick="closeModal()">CONTINUAR MISIÓN</button>
+  </div>
+</div>
+
+<script>
+// =============================================
+//  CONFIGURACIÓN DE LUGARES
+// =============================================
+const LOCATIONS = [
+  {
+    id: 0,
+    name: "PUNTO ALPHA",
+    lat: 43.5333,        // ← Cambia estas coordenadas
+    lon: -5.6667,        // ← Cambia estas coordenadas
+    radius: 20,          // metros para considerar "llegado"
+    pista: "Busca el lugar donde el agua se encuentra con la ciudad. Un faro o monumento cerca del mar podría ser tu guía.",
+    congrats: "¡MISIÓN ALPHA COMPLETADA! Has encontrado el primer punto de la ruta. Eres un explorador nato. ¡Prepárate para el siguiente desafío!"
+  },
+  {
+    id: 1,
+    name: "PUNTO BETA",
+    lat: 43.5350,        // ← Cambia estas coordenadas
+    lon: -5.6620,        // ← Cambia estas coordenadas
+    radius: 20,
+    pista: "El conocimiento es poder. Busca un edificio histórico o cultural emblemático de la zona. Sus paredes guardan siglos de historia.",
+    congrats: "¡EXCELENTE! Punto Beta conquistado. Tu precisión es admirable. Solo queda un objetivo para completar la misión total."
+  },
+  {
+    id: 2,
+    name: "PUNTO OMEGA",
+    lat: 43.5310,        // ← Cambia estas coordenadas
+    lon: -5.6700,        // ← Cambia estas coordenadas
+    radius: 20,
+    pista: "El final está donde la gente se reúne. Una plaza, un parque o un espacio abierto icónico es tu destino final. ¡La victoria te espera!",
+    congrats: "🏆 ¡MISIÓN COMPLETADA AL 100%! Has conquistado todos los puntos. Eres un agente de élite. ¡La operación GPS Quest ha concluido con éxito total!"
+  }
+];
+
+// =============================================
+//  ESTADO
+// =============================================
+const state = {
+  gpsActive: false,
+  compassActive: false,
+  watchId: null,
+  currentLat: null,
+  currentLon: null,
+  accuracy: null,
+  deviceHeading: null,
+  currentTarget: 0,
+  completed: new Set(),
+  logs: []
+};
+
+// =============================================
+//  INICIALIZACIÓN
+// =============================================
+function init() {
+  renderLocationList();
+  updateClue();
+  log('Sistema iniciado. Activa GPS y brújula para comenzar.');
+}
+
+function renderLocationList() {
+  const el = document.getElementById('locationList');
+  el.innerHTML = LOCATIONS.map((loc, i) => `
+    <div class="location-item ${i === state.currentTarget ? 'active' : ''} ${state.completed.has(i) ? 'completed' : ''}"
+         onclick="selectTarget(${i})" id="locItem${i}">
+      <div class="loc-number">${i + 1}</div>
+      <div class="loc-info">
+        <div class="loc-name">${loc.name}</div>
+        <div class="loc-hint">${state.completed.has(i) ? '✓ COMPLETADO' : (i === state.currentTarget ? loc.pista.substring(0, 40) + '...' : '???')}</div>
+      </div>
+      <div class="loc-status">${state.completed.has(i) ? '✅' : (i === state.currentTarget ? '◎' : '○')}</div>
+    </div>
+  `).join('');
+}
+
+function updateClue() {
+  const loc = LOCATIONS[state.currentTarget];
+  if (state.completed.size === LOCATIONS.length) {
+    document.getElementById('clueText').textContent = '🏆 ¡Todos los objetivos completados! Misión finalizada con éxito.';
+    return;
+  }
+  document.getElementById('clueText').textContent = loc.pista;
+}
+
+function selectTarget(i) {
+  if (state.completed.has(i)) return;
+  state.currentTarget = i;
+  renderLocationList();
+  updateClue();
+  updateCompassDisplay();
+  log(`Objetivo cambiado a: ${LOCATIONS[i].name}`);
+}
+
+// =============================================
+//  GPS
+// =============================================
+function toggleGPS() {
+  if (!state.gpsActive) {
+    startGPS();
+  } else {
+    stopGPS();
+  }
+}
+
+function startGPS() {
+  if (!navigator.geolocation) {
+    log('ERROR: Geolocalización no disponible en este navegador.');
+    return;
+  }
+  log('Solicitando permiso GPS...');
+  
+  const options = {
+    enableHighAccuracy: true,
+    timeout: 10000,
+    maximumAge: 2000
+  };
+
+  state.watchId = navigator.geolocation.watchPosition(
+    onGPSUpdate,
+    onGPSError,
+    options
+  );
+
+  state.gpsActive = true;
+  document.getElementById('btnGps').classList.add('active');
+  document.getElementById('dotGps').classList.add('on-gps');
+  document.getElementById('btnGpsText').textContent = '◉ GPS ACTIVO — DETENER';
+  log('GPS activado. Esperando señal...');
+}
+
+function stopGPS() {
+  if (state.watchId !== null) {
+    navigator.geolocation.clearWatch(state.watchId);
+    state.watchId = null;
+  }
+  state.gpsActive = false;
+  state.currentLat = null;
+  state.currentLon = null;
+  document.getElementById('btnGps').classList.remove('active');
+  document.getElementById('dotGps').classList.remove('on-gps');
+  document.getElementById('btnGpsText').textContent = '◉ ACTIVAR GPS';
+  document.getElementById('valLat').textContent = '---';
+  document.getElementById('valLon').textContent = '---';
+  document.getElementById('valAcc').textContent = '---';
+  document.getElementById('accBar').style.width = '0%';
+  document.getElementById('distNumber').textContent = '---';
+  document.getElementById('bearingDisplay').textContent = '▸ --- °';
+  log('GPS detenido.');
+}
+
+function onGPSUpdate(pos) {
+  state.currentLat = pos.coords.latitude;
+  state.currentLon = pos.coords.longitude;
+  state.accuracy = pos.coords.accuracy;
+
+  document.getElementById('valLat').textContent = state.currentLat.toFixed(5);
+  document.getElementById('valLon').textContent = state.currentLon.toFixed(5);
+  document.getElementById('valAcc').textContent = `±${Math.round(state.accuracy)}m`;
+
+  // Accuracy bar (100m = 0%, 5m = 100%)
+  const pct = Math.max(0, Math.min(100, (1 - (state.accuracy - 5) / 95) * 100));
+  document.getElementById('accBar').style.width = pct + '%';
+
+  updateCompassDisplay();
+  checkArrival();
+}
+
+function onGPSError(err) {
+  const msgs = {
+    1: 'Permiso GPS denegado por el usuario.',
+    2: 'Posición no disponible.',
+    3: 'Tiempo de espera agotado.'
+  };
+  log('GPS ERROR: ' + (msgs[err.code] || err.message));
+}
+
+// =============================================
+//  COMPASS / ORIENTACIÓN
+// =============================================
+function toggleCompass() {
+  if (!state.compassActive) {
+    startCompass();
+  } else {
+    stopCompass();
+  }
+}
+
+function startCompass() {
+  // iOS requiere requestPermission
+  if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission()
+      .then(permission => {
+        if (permission === 'granted') {
+          activateCompassListeners();
+        } else {
+          log('Permiso de orientación denegado.');
+        }
+      })
+      .catch(err => log('Error solicitando permiso brújula: ' + err));
+  } else if (typeof DeviceOrientationEvent !== 'undefined') {
+    activateCompassListeners();
+  } else {
+    log('Este dispositivo no tiene sensor de orientación.');
+  }
+}
+
+function activateCompassListeners() {
+  window.addEventListener('deviceorientationabsolute', onOrientation, true);
+  window.addEventListener('deviceorientation', onOrientation, true);
+  state.compassActive = true;
+  document.getElementById('btnCompass').classList.add('active');
+  document.getElementById('dotCompass').classList.add('on-compass');
+  document.getElementById('btnCompassText').textContent = '⊕ BRÚJULA ACTIVA — DETENER';
+  log('Brújula activada.');
+}
+
+function stopCompass() {
+  window.removeEventListener('deviceorientationabsolute', onOrientation, true);
+  window.removeEventListener('deviceorientation', onOrientation, true);
+  state.compassActive = false;
+  state.deviceHeading = null;
+  document.getElementById('btnCompass').classList.remove('active');
+  document.getElementById('dotCompass').classList.remove('on-compass');
+  document.getElementById('btnCompassText').textContent = '⊕ ACTIVAR BRÚJULA';
+  document.getElementById('valHeading').textContent = '---';
+  document.getElementById('northRing').style.transform = 'rotate(0deg)';
+  log('Brújula detenida.');
+}
+
+function onOrientation(event) {
+  let heading = null;
+
+  // webkitCompassHeading (iOS) — ya orientado al norte magnético
+  if (event.webkitCompassHeading != null) {
+    heading = event.webkitCompassHeading;
+  }
+  // deviceorientationabsolute — alpha relativo al norte geográfico
+  else if (event.absolute && event.alpha != null) {
+    heading = 360 - event.alpha;
+  }
+  // Fallback: alpha sin garantía de referencia
+  else if (event.alpha != null) {
+    heading = 360 - event.alpha;
+  }
+
+  if (heading == null) return;
+  heading = (heading + 360) % 360;
+  state.deviceHeading = heading;
+
+  document.getElementById('valHeading').textContent = Math.round(heading) + '°';
+
+  // Rotar el anillo N en sentido opuesto al heading del device
+  // para que N siempre apunte al norte real
+  document.getElementById('northRing').style.transform = `rotate(${-heading}deg)`;
+
+  updateCompassDisplay();
+}
+
+// =============================================
+//  CÁLCULOS
+// =============================================
+function toRad(deg) { return deg * Math.PI / 180; }
+function toDeg(rad) { return rad * 180 / Math.PI; }
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371000;
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a = Math.sin(dLat/2)**2 +
+            Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function bearing(lat1, lon1, lat2, lon2) {
+  const dLon = toRad(lon2 - lon1);
+  const y = Math.sin(dLon) * Math.cos(toRad(lat2));
+  const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+            Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLon);
+  return (toDeg(Math.atan2(y, x)) + 360) % 360;
+}
+
+function updateCompassDisplay() {
+  if (state.currentLat == null) return;
+  if (state.completed.size === LOCATIONS.length) return;
+
+  const target = LOCATIONS[state.currentTarget];
+  const dist = haversine(state.currentLat, state.currentLon, target.lat, target.lon);
+  const bear = bearing(state.currentLat, state.currentLon, target.lat, target.lon);
+
+  // Mostrar distancia
+  const distEl = document.getElementById('distNumber');
+  if (dist < 1000) {
+    distEl.textContent = Math.round(dist);
+  } else {
+    distEl.textContent = (dist / 1000).toFixed(2) + ' km';
+    document.querySelector('.distance-unit').textContent = 'AL OBJETIVO';
+  }
+
+  document.getElementById('bearingDisplay').textContent = `▸ ${Math.round(bear)} °`;
+
+  // Rotar aguja al objetivo
+  // La aguja debe apuntar al target relativo al norte del dispositivo
+  let needleAngle = bear;
+  if (state.deviceHeading != null) {
+    needleAngle = (bear - state.deviceHeading + 360) % 360;
+  }
+  document.getElementById('needleGroup').style.transform = `rotate(${needleAngle}deg)`;
+}
+
+// =============================================
+//  DETECCIÓN DE LLEGADA
+// =============================================
+function checkArrival() {
+  if (state.currentLat == null) return;
+  if (state.completed.size === LOCATIONS.length) return;
+
+  const target = LOCATIONS[state.currentTarget];
+  const dist = haversine(state.currentLat, state.currentLon, target.lat, target.lon);
+
+  if (dist <= target.radius) {
+    state.completed.add(state.currentTarget);
+    log(`¡OBJETIVO ${target.name} ALCANZADO! (${Math.round(dist)}m)`);
+
+    // Buscar siguiente no completado
+    let nextTarget = -1;
+    for (let i = 0; i < LOCATIONS.length; i++) {
+      if (!state.completed.has(i)) { nextTarget = i; break; }
+    }
+
+    showModal(target.congrats, nextTarget === -1);
+
+    renderLocationList();
+
+    if (nextTarget !== -1) {
+      state.currentTarget = nextTarget;
+      updateClue();
+    }
+  }
+}
+
+// =============================================
+//  MODAL
+// =============================================
+function showModal(message, isComplete) {
+  document.getElementById('modalIcon').textContent = isComplete ? '🏆' : '🎯';
+  document.getElementById('modalTitle').textContent = isComplete ? '¡MISIÓN COMPLETADA!' : 'OBJETIVO ALCANZADO';
+  document.getElementById('modalMessage').textContent = message;
+  document.getElementById('modalOverlay').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.add('hidden');
+}
+
+// =============================================
+//  LOG
+// =============================================
+function log(msg) {
+  const now = new Date();
+  const time = now.toTimeString().substring(0, 8);
+  state.logs.unshift({ time, msg });
+  if (state.logs.length > 4) state.logs.pop();
+
+  const box = document.getElementById('logBox');
+  box.innerHTML = state.logs.map(l =>
+    `<div class="log-line"><span class="log-time">${l.time}</span><span>${l.msg}</span></div>`
+  ).join('');
+}
+
+// =============================================
+//  ARRANQUE
+// =============================================
+init();
+</script>
 </body>
 </html>
