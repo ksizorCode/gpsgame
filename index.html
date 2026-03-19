@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#111827" />
+  <meta name="description" content="Juego tipo raid por GPS en formato PWA" />
+  <title>Raid GPS</title>
+
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="styles.css" />
+
+  <!-- iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Raid GPS" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">PWA · Raid interactiva</p>
+        <h1>Raid GPS</h1>
+      </div>
+      <button id="installBtn" class="ghost hidden">Instalar</button>
+    </header>
+
+    <main class="container">
+      <section class="card hero">
+        <div class="hero-copy">
+          <p class="label">Objetivo actual</p>
+          <h2 id="currentPlaceName">Esperando inicio...</h2>
+          <p id="currentInstruction" class="instruction">
+            Pulsa en “Empezar” para permitir la ubicación y comenzar la raid.
+          </p>
+        </div>
+
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-label">Distancia</span>
+            <strong id="distanceText">-- m</strong>
+          </div>
+          <div class="stat">
+            <span class="stat-label">Precisión GPS</span>
+            <strong id="accuracyText">-- m</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="card controls">
+        <div class="button-row">
+          <button id="startBtn" class="primary">Empezar</button>
+          <button id="stopBtn" class="secondary">Detener</button>
+          <button id="resetBtn" class="ghost">Reiniciar</button>
+        </div>
+
+        <div class="progress-wrap">
+          <div class="progress-meta">
+            <span>Progreso</span>
+            <span id="progressText">0 / 3</span>
+          </div>
+          <div class="progress-bar">
+            <div id="progressFill" class="progress-fill"></div>
+          </div>
+        </div>
+
+        <p id="status" class="status">
+          La aplicación necesita acceso a la ubicación para funcionar.
+        </p>
+      </section>
+
+      <section class="card radar">
+        <div class="radar-center">
+          <div class="radar-ring ring-1"></div>
+          <div class="radar-ring ring-2"></div>
+          <div class="radar-ring ring-3"></div>
+          <div id="radarDot" class="radar-dot"></div>
+          <div class="radar-core"></div>
+        </div>
+        <p class="radar-help">
+          El punto se acerca al centro cuando estás más cerca del siguiente lugar.
+        </p>
+      </section>
+
+      <section class="card log-card">
+        <div class="section-head">
+          <h3>Lugares de la raid</h3>
+          <span id="raidStateBadge" class="badge">Pendiente</span>
+        </div>
+        <ol id="placesList" class="places-list"></ol>
+      </section>
+
+      <section id="messageCard" class="card message-card hidden">
+        <div class="section-head">
+          <h3>Mensaje desbloqueado</h3>
+          <span class="badge success">Completado</span>
+        </div>
+        <h4 id="messageTitle"></h4>
+        <p id="messageBody"></p>
+        <button id="continueBtn" class="primary">Continuar</button>
+      </section>
+
+      <section id="finalCard" class="card final-card hidden">
+        <h3>Raid completada</h3>
+        <p>
+          Has llegado a todos los puntos. Ya puedes reiniciar la experiencia o preparar una nueva ruta.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

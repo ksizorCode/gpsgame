@@ -1,0 +1,25 @@
+{
+  "name": "Raid GPS",
+  "short_name": "RaidGPS",
+  "description": "Videojuego interactivo basado en geolocalización con puntos de una raid.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#111827",
+  "lang": "es",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiB2aWV3Qm94PSIwIDAgMTkyIDE5MiI+PHJlY3Qgd2lkdGg9IjE5MiIgaGVpZ2h0PSIxOTIiIHJ4PSIzNiIgZmlsbD0iIzExMTgyNyIvPjxjaXJjbGUgY3g9Ijk2IiBjeT0iOTYiIHI9IjU2IiBmaWxsPSIjMzhiZGY4IiBvcGFjaXR5PSIwLjE4Ii8+PGNpcmNsZSBjeD0iOTYiIGN5PSI5NiIgcj0iMTgiIGZpbGw9IiNmZmYiLz48cGF0aCBkPSJNOTYgMzZsMjAgNDAtMjAgMTQtMjAtMTR6IiBmaWxsPSIjMzhiZGY4Ii8+PC9zdmc+",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiB2aWV3Qm94PSIwIDAgNTEyIDUxMiI+PHJlY3Qgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIHJ4PSI5NiIgZmlsbD0iIzExMTgyNyIvPjxjaXJjbGUgY3g9IjI1NiIgY3k9IjI1NiIgcj0iMTQ4IiBmaWxsPSIjMzhiZGY4IiBvcGFjaXR5PSIwLjE4Ii8+PGNpcmNsZSBjeD0iMjU2IiBjeT0iMjU2IiByPSI0NCIgZmlsbD0iI2ZmZiIvPjxwYXRoIGQ9Ik0yNTYgOTZsNTIgMTA0LTUyIDM2LTUyLTM2eiIgZmlsbD0iIzM4YmRmOCIvPjwvc3ZnPg==",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
